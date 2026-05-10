@@ -1,0 +1,11 @@
+[project]
+name = "voice-agent-sip-openai-agents"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14.4"
+dependencies = [
+    "fastapi>=0.124.0",
+    "openai-agents>=0.17.0",
+    "uvicorn>=0.38.0",
+]
