@@ -7,6 +7,7 @@ import os
 import websockets
 from fastapi import FastAPI, HTTPException, Request, Response
 from openai import APIStatusError, AsyncOpenAI, InvalidWebhookSignatureError
+from dotenv import load_dotenv
 
 from agents.realtime.config import RealtimeSessionModelSettings
 from agents.realtime.items import (
@@ -21,6 +22,8 @@ from agents.realtime.openai_realtime import OpenAIRealtimeSIPModel
 from agents.realtime.runner import RealtimeRunner
 
 from .agent import WELCOME_MESSAGE, get_starting_agent
+
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("flora_voice_sip")
@@ -167,7 +170,7 @@ def _track_call_task(call_id: str) -> None:
     active_call_tasks[call_id] = task
 
 
-@app.post("/openai/webhook")
+@app.post("/")
 async def openai_webhook(request: Request) -> Response:
     body = await request.body()
 
