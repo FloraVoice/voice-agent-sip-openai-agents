@@ -1,6 +1,3 @@
-from __future__ import annotations
-
-from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
 from agents.realtime import RealtimeAgent
 
 from .tools import FLOWER_ORDER_TOOLS
@@ -32,16 +29,9 @@ flora_voice_agent = RealtimeAgent(
     name="Flora Voice Agent",
     handoff_description="Handles flower-ordering calls from greeting through order creation.",
     instructions=(
-        f"{RECOMMENDED_PROMPT_PREFIX}\n"
         "Always begin the call by saying exactly: '"
         f"{WELCOME_MESSAGE}' before collecting details.\n\n"
         f"{FLORA_VOICE_INSTRUCTIONS}"
     ),
     tools=FLOWER_ORDER_TOOLS,
 )
-
-
-def get_starting_agent() -> RealtimeAgent:
-    """Return the realtime agent used to start each SIP call."""
-
-    return flora_voice_agent

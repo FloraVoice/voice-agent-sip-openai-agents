@@ -21,7 +21,7 @@ from agents.realtime.model_inputs import RealtimeModelSendRawMessage
 from agents.realtime.openai_realtime import OpenAIRealtimeSIPModel
 from agents.realtime.runner import RealtimeRunner
 
-from .agent import WELCOME_MESSAGE, get_starting_agent
+from .agent import WELCOME_MESSAGE, flora_voice_agent
 
 load_dotenv()
 
@@ -41,7 +41,7 @@ OPENAI_WEBHOOK_SECRET = _get_env("OPENAI_WEBHOOK_SECRET")
 OPENAI_REALTIME_MODEL = os.getenv("OPENAI_REALTIME_MODEL", "gpt-realtime-2")
 
 client = AsyncOpenAI(api_key=OPENAI_API_KEY, webhook_secret=OPENAI_WEBHOOK_SECRET)
-assistant_agent = get_starting_agent()
+assistant_agent = flora_voice_agent
 active_call_tasks: dict[str, asyncio.Task[None]] = {}
 
 app = FastAPI(
@@ -173,6 +173,7 @@ def _track_call_task(call_id: str) -> None:
 @app.post("/")
 async def openai_webhook(request: Request) -> Response:
     body = await request.body()
+    print(body)
 
     try:
         event = client.webhooks.unwrap(body, request.headers)
