@@ -2,7 +2,7 @@
 
 FastAPI service for handling OpenAI Realtime SIP calls with the Agents SDK.
 Incoming calls are accepted through the Realtime Calls API, then a Flora Voice
-agent helps callers order flowers using dummy function tools.
+agent helps callers order flowers using function tools.
 
 ## Prerequisites
 
@@ -59,14 +59,11 @@ Expose it publicly:
 ngrok http 8000
 ```
 
-## Dummy Tools
+## Tools
 
-The realtime agent currently includes placeholder function tools in
-`app/tools.py`:
+The realtime agent includes function tools in `app/tools.py`:
 
 - `create_user`
 - `search_user`
 - `search_flowers`
 - `create_order`
-
-Replace those implementations when the real Flora Voice API is ready.

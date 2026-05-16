@@ -1,49 +1,112 @@
 from __future__ import annotations
 
 import asyncio
+import os
+from urllib.parse import quote
 
+import aiohttp
 from agents import function_tool
 
 
+FLORA_API_BASE_URL = os.getenv("FLORA_API_BASE_URL", "http://localhost:8001").rstrip("/")
+
+
+async def _get_json(path: str) -> object:
+    url = f"{FLORA_API_BASE_URL}{path}"
+    timeout = aiohttp.ClientTimeout(total=10)
+
+    try:
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(url, headers={"Accept": "application/json"}) as response:
+                if response.status >= 400:
+                    detail = await response.text()
+                    raise RuntimeError(f"Flora API returned {response.status}: {detail}")
+
+                return await response.json()
+    except aiohttp.ClientError as exc:
+        raise RuntimeError(f"Could not reach Flora API at {url}: {exc}") from exc
+
+
+async def _post_json(path: str, payload: dict[str, object]) -> object:
+    url = f"{FLORA_API_BASE_URL}{path}"
+    timeout = aiohttp.ClientTimeout(total=10)
+
+    try:
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.post(
+                url,
+                json=payload,
+                headers={"Accept": "application/json"},
+            ) as response:
+                if response.status >= 400:
+                    detail = await response.text()
+                    raise RuntimeError(f"Flora API returned {response.status}: {detail}")
+
+                return await response.json()
+    except aiohttp.ClientError as exc:
+        raise RuntimeError(f"Could not reach Flora API at {url}: {exc}") from exc
+
+
 @function_tool
-async def create_user(name: str, phone: str, email: str | None = None) -> dict[str, str]:
+async def create_user(
+    username: str,
+    phone_number: str,
+    address: str,
+    email: str,
+) -> dict[str, str]:
     """Create a customer profile.
 
     Args:
-        name: Customer full name.
-        phone: Customer phone number.
-        email: Optional customer email address.
+        username: Customer full name or preferred display name.
+        phone_number: Customer phone number.
+        address: Customer delivery address.
+        email: Customer email address.
     """
-    await asyncio.sleep(1)
-    return {
-        "user_id": "usr_dummy_001",
-        "name": name,
-        "phone": phone,
-        "email": email or "",
-        "status": "created",
-    }
+    user = await _post_json(
+        "/users/",
+        {
+            "email": email,
+            "username": username,
+            "phone_number": phone_number,
+            "address": address,
+        },
+    )
+    if not isinstance(user, dict):
+        raise RuntimeError("Flora API returned an unexpected user response.")
+
+    return user
 
 
 @function_tool
-async def search_user(phone: str | None = None, email: str | None = None) -> list[dict[str, str]]:
+async def search_user(
+    phone_number: str | None = None,
+    email: str | None = None,
+) -> list[dict[str, str]]:
     """Search for existing customers.
 
     Args:
-        phone: Customer phone number.
+        phone_number: Customer phone number.
         email: Customer email address.
     """
-    await asyncio.sleep(1)
-    if not phone and not email:
+    query = phone_number or email
+    if not query:
         return []
 
-    return [
-        {
-            "user_id": "usr_dummy_001",
-            "name": "Demo Customer",
-            "phone": phone or "+359000000000",
-            "email": email or "demo@example.com",
-        }
-    ]
+    users = await _get_json(f"/users/search?q={quote(query)}&limit=5")
+    if not isinstance(users, list):
+        raise RuntimeError("Flora API returned an unexpected users response.")
+
+    return users
+
+
+@function_tool
+async def get_all_flowers() -> list[dict[str, str | float | int]]:
+    """Get every available flower from the Flora API."""
+    flowers = await _get_json("/flowers/")
+    if not isinstance(flowers, list):
+        raise RuntimeError("Flora API returned an unexpected flowers response.")
+
+    return flowers
 
 
 @function_tool
@@ -113,4 +176,4 @@ async def create_order(
     }
 
 
-FLOWER_ORDER_TOOLS = [create_user, search_user, search_flowers, create_order]
+FLOWER_ORDER_TOOLS = [create_user, search_user, get_all_flowers, search_flowers, create_order]

@@ -16,8 +16,10 @@ Workflow:
 1. Understand the occasion, preferences, budget, recipient, delivery address,
    delivery date, and card note if needed.
 2. Use search_user when the caller provides a phone number or email.
-3. Use create_user when no matching customer exists or the caller is new.
-4. Use search_flowers to suggest suitable arrangements.
+3. Use create_user when no matching customer exists or the caller is new,
+   after collecting their name, phone number, email, and delivery address.
+4. Use get_all_flowers to retrieve current flower availability from the API,
+   then use search_flowers only if the caller needs broader recommendations.
 5. Use create_order only after confirming the customer, selected flowers,
    quantity, recipient, delivery address, and delivery date.
 
