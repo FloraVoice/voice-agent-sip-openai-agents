@@ -144,36 +144,25 @@ async def search_flowers(
 @function_tool
 async def create_order(
     user_id: str,
-    flower_id: str,
-    quantity: int,
-    recipient_name: str,
-    delivery_address: str,
-    delivery_date: str,
-    note: str | None = None,
-) -> dict[str, str | int]:
+    items: list[dict[str, str | int]],
+) -> dict[str, object]:
     """Create a flower order.
 
     Args:
         user_id: Customer identifier.
-        flower_id: Selected flower or arrangement identifier.
-        quantity: Number of arrangements.
-        recipient_name: Delivery recipient name.
-        delivery_address: Full delivery address.
-        delivery_date: Requested delivery date.
-        note: Optional card or delivery note.
+        items: Flowers to order. Each item must include flower_id and quantity.
     """
-    await asyncio.sleep(1)
-    return {
-        "order_id": "ord_dummy_001",
-        "user_id": user_id,
-        "flower_id": flower_id,
-        "quantity": quantity,
-        "recipient_name": recipient_name,
-        "delivery_address": delivery_address,
-        "delivery_date": delivery_date,
-        "note": note or "",
-        "status": "created",
-    }
+    order = await _post_json(
+        "/orders/",
+        {
+            "user_id": user_id,
+            "items": items,
+        },
+    )
+    if not isinstance(order, dict):
+        raise RuntimeError("Flora API returned an unexpected order response.")
+
+    return order
 
 
 FLOWER_ORDER_TOOLS = [create_user, search_user, get_all_flowers, search_flowers, create_order]
